@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Prezento : Demo shell</title>
+  <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="./index.css">
+</head>
+<body>
+
+<h1>Prezento : Demo shell</h1>
+
+<table>
+  <tr>
+    <td>Title</td>
+    <td class="title"></td>
+  </tr>
+  <tr>
+    <td>Author</td>
+    <td class="author"></td>
+  </tr>
+  <tr>
+    <td>Description</td>
+    <td class="description"></td>
+  </tr>
+  <tr>
+    <td>Features</td>
+    <td class="features"></td>
+  </tr>
+</table>
+
+<div class="screen">
+  <iframe></iframe>
+
+  <div class="actions">
+    <button data-action="first"><i class="icon-step-backward"></i></button>
+    <button data-action="prev"><i class="icon-chevron-left"></i></button>
+    <span class="current-step">?</span> / <span class="steps-count">?</span>
+    <button data-action="next"><i class="icon-chevron-right"></i></button>
+    <button data-action="last"><i class="icon-step-forward"></i></button>
+
+    <input type="text" class="current-cursor"><button data-action="goTo"><i class="icon-search"></i></button>
+
+    <button data-action="toggleOverview" disabled><i class="icon-th"></i></button>
+    <button data-action="toggleMultimedia" disabled><i class="icon-play"></i> / <i class="icon-stop"></i></button>
+
+    <button data-action="goFullscreen"><i class="icon-eye-open"></i></button>
+  </div>
+</div>
+
+<div class="current-notes"></div>
+
+<script src="../../prezento.js"></script>
+<script src="./index.js"></script>
+</body>
+</html>
