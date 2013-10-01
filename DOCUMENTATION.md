@@ -1,5 +1,20 @@
 # Prezento Documentation
 
+1. [The protocol](#the-protocol)
+  * [Metas](#metas)
+  * [Data format](#data-format)
+  * [Core and features](#core-and-features)
+  * [Initialization](#initialization)
+  * [Slide deck informations object](#slide-deck-informations-object)
+  * [Cursor and step trigger](#cursor-and-step-trigger)
+2. [Reference](#reference)
+  * [Actions](#actions)
+  * [Events](#events)
+  * [Definitions](#definitions)
+3. [The library](#the-library)
+  * [Implementing prezento on a shell](#implementing-prezento-on-a-shell)
+  * [Implementing prezento on a slide deck framework](#implementing-prezento-on-a-slide-deck-framework)
+
 ## The protocol
 
 Whatever the use case, it's always a matter of a webpage embedding an HTML5 slide deck in an iframe and trying to interact with it. Prezento defines the concept of a "shell" to refer to the container webpage. The slide deck page is simply refered to as a "slide deck" ;-)
@@ -10,18 +25,34 @@ The interactions between both pages are handled by `postMessage`. Messages are e
 
 ### Metas
 
-HTML5 slide deck documents must have two prezento specific metas. They are really important for search engines and various sharing websites :
+HTML5 slide deck documents must contain some prezento specific metas. It will be really important for search engines and sharing websites. Just add these two meta tag in your `<head>` :
 
- * `<meta name="prezento-capable" content="yes">`
- * `<meta name="prezento-vendor" content="myvendor">`
+```html
+<meta name="prezento-capable" content="yes">
+<meta name="prezento-vendor" content="myvendor">
+```
+
+Replace vendor with your HTML5 slide deck name. It should never change!
 
 ### Data format
 
 The [HTML5 Web Messaging spec](http://www.w3.org/TR/webmessaging/) says `postMessage` can transport any kind of JavaScript value (nested objects, arrays, strings, numbers, dates...). To keep things simple, a valid prezento message must be an array. The first item is always the name of the action or the event. The other items are the different parameters, they are optionnal.
 
+Here is an example of an action sent with no parameters :
+
+```
+['init']
+```
+
+Here is an example of an event sent with one parameter :
+
+```
+['cursor', '4.2']
+```
+
 ### Core and features
 
-HTML5 slide deck don't work the same way. Prezento defines two kinds of messages : core and feature. Core messages must be implemented. Feature messages implementation depends on which feature a given framework offers. Feature messages must be documented in this document in order to unify similar features (like notes or overview mode).
+HTML5 slide decks don't work the same way. Prezento defines two kinds of messages : core and feature. Core messages must be implemented. Feature messages are not mandatory. Their implementation depends on which feature a given framework offers. Feature messages must be documented in this document in order to unify similar features (like notes or overview mode) between slide deck frameworks.
 
 ### Initialization
 
@@ -43,17 +74,43 @@ Here's the valid prezento initialization process :
 7. The shell receives the `ready` event and use the `slideDeckInfos` object.
 8. The shell receives the `cursor` and `step` events and use their values.
 
+*[TODO interaction diagram]*
+
 ### Slide deck informations object
 
-[TODO]
+When the slide deck is ready it must send some informations to the deck as a parameter to the `ready` event. These informations are presented as a key/value object call `slideDeckInfos`.
+
+Here are details about what this object can and must contain :
+
+Key | Type | Description | Mandatory
+--- | --- | --- | ---
+`title` | String | Title of the presentation.<br>Usually, it is the contents of the `<title>` tag. | Yes
+`author` | String | Author of the presentation.<br>Usually, it is the contents of the `<meta name="author">` tag. |
+`description` | String | Brief description of the presentation.<br>Usually, it is the contents of the `<meta name="description">` tag. |
+`steps` | Array(String) | Contains all the cursors identified as important steps. | Yes
+`features` | Array(String) | Contains all the prezento features the current presentation uses. If none, it must be an empty array. | Yes
+
+Here's a full example :
+
+```javascript
+{
+    title: "reveal.js - The HTML Presentation Framework",
+    author: "Hakim El Hattab",
+    description: "A framework for easily creating beautiful presentations using HTML",
+    steps: ["0.0", "1.0", "2.0", "3.0", "4.0", "5.0"],
+    features: ["overview", "notes"]
+}
+```
 
 ### Cursor and step trigger
 
 Once the slide deck is ready, the shell can send actions and the slide deck can send events.
 
-Prezento only defines one mandatory behaviour for action/event exchanges, the cursor trigger. When a slide deck receives an action that modifies its current cursor (see definitions) it must send back a `cursor` event with the current cursor as first parameter.
+Prezento only defines one mandatory behaviour for action/event exchanges, the cursor and step trigger. When a slide deck receives an action that modifies its current cursor (see definitions) it must send back a `cursor` event with the current cursor as first parameter and the `step` event with the current step as first parameter.
 
 All core actions except `init` are concerned with this behaviour : `goTo`, `prev`, `next`, `first` and `last`.
+
+## Reference
 
 ### Actions
 
@@ -106,7 +163,10 @@ Here are some definitions used in the protocol documentation :
 <dd>A cursor is a unique identifier for a given slide deck state. A cursor can be composed of a slide number, a fragment (in-slide number), a second dimension slide number... Each framework can have its own way to identify a cursor, it does not prevent the shell to use them. Ex: "42", "4.7", "3.1.2", "my-super-slide"...
 
 <dt>Step
-<dd>Cursors represents all the positions in a slide deck and steps only the important ones. Steps allow shell to know about progression inside of a slide deck.<br> In most cases, steps represents only slide cursors (as opposed to fragements cursors and other kind of slide division).
+<dd>A step is an important cursor. Steps can be used to know current progress in the presentation (4 of 12 for example). Usually, steps identify slide cursor (as opposed to subslide or fragment cursors).
+
+<dt>Slide
+<dd>A slide is composed of visual contents that can appear at once or incrementally (fragments). A combination or ordered slides compose a slide deck that can be used during a presentation.
 
 <dt>Fragment
 <dd>A fragment is a division of a slide. In most cases it refers to bullet points that appear one by one.
@@ -121,14 +181,14 @@ Here are some definitions used in the protocol documentation :
 
 ## The library
 
-The `prezento.js` is provided to help shell and slide deck developers to implement the protocol. Its usage is not mandatory to comply to the protocol but it most cases it will help.
+The `prezento.js` is provided to help slide deck and shell developers to implement the protocol. Its usage is not mandatory to comply to the protocol but it most cases it will help.
 
 ### Implementing prezento on a shell
 
-Let's use the presentation sharing website example. A slide deck page contains :
+Let's use the presentation sharing website example. A page contains :
 
 * An iframe pointing to the HTML5 slide deck
-* Informations about the slide deck : current slide, total number or slides...
+* Informations about the slide deck : current step, total number or steps...
 * Different buttons to interact with the slide deck : next, previous...
 
 #### Initialization
@@ -141,7 +201,7 @@ var slideDeck = prezento.createSlideDeckProxy('iframe');
 
 #### Listening for events
 
-Once we have a `slideDeckProxy` object, we must add listeners to the core events `ready` and `cursor` with the `on` function. Calls can be chained. Parameters are automatically extracted from the message by the library and passed to the listener as function arguments.
+Once we have a `slideDeckProxy` object, we must add listeners to the core events `ready`, `cursor` and `step` with the `on` function. Calls can be chained. Parameters are automatically extracted from the message by the library and passed to the listener as function arguments.
 
 ```javascript
 var slideDeck = prezento.createSlideDeckProxy('iframe')
@@ -161,7 +221,9 @@ var slideDeck = prezento.createSlideDeckProxy('iframe')
 
 #### Sending actions
 
-Sending actions to the slide deck is very easy. Direct functions are exposed on the `slideDeckProxy` object. Parameters can be passed as arguments to theses function when needed. The library automatically formats the message as required by the protocol. We only need to wire them to the shell interface buttons and controls.
+Sending actions to the slide deck can be done using `slideDeckProxy` object corresponding methods. Parameters can be passed as arguments to theses function when needed. The library automatically formats the message as required by the protocol. We only need to wire them to the shell interface buttons and controls.
+
+All core and feature actions are available as direct methods with the same name :
 
 ```javascript
 var nextButton = document.querySelector('.next-button'),
@@ -178,4 +240,4 @@ goTo42Button.addEventListener('click', function () {
 
 ### Implementing prezento on a slide deck framework
 
-[TODO]
+*[TODO describe slide deck implementation]*
