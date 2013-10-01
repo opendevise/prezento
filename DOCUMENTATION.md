@@ -183,6 +183,8 @@ Here are some definitions used in the protocol documentation :
 
 The `prezento.js` is provided to help slide deck and shell developers to implement the protocol. Its usage is not mandatory to comply to the protocol but it most cases it will help.
 
+*[TODO diagram of the two page and library usage]*
+
 ### Implementing prezento on a shell
 
 Let's use the presentation sharing website example. A page contains :
