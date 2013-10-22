@@ -2,10 +2,10 @@ body {
   color: #333;
   font-family: Helvetica, Arial, sans-serif;
   line-height: 1.65em;
-  padding: 20px;
+  padding: 20px 0;
   margin: 0 auto;
   max-width: 700px;
-  width: 92%;
+  width: 90%;
 }
 
 h1,
@@ -18,8 +18,12 @@ table {
 iframe {
   background: #FFF;
   border: 1px solid #DDD;
-  border-radius: 5px;
+  border-radius: 3px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
   height: 300px;
+  max-width: 533px;
   width: 100%;
 }
 
@@ -104,7 +108,7 @@ table tr:nth-child(odd) td {
 
 .full iframe {
   height: 85%;
-  width: 100%;
+  max-width: 100%;
 }
 
 .full .controls {
