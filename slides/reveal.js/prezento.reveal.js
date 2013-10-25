@@ -9,17 +9,17 @@ prezento
     features: ["overview", "notes"]
   })
 
-  .getter('cursor', function () {
+  .setGetterFor('cursor', function () {
     var cursor = Reveal.getIndices();
     return cursor.h + '.' + cursor.v + (cursor.f ? ('.' + cursor.f) : '');
   })
 
-  .getter('step', function () {
+  .setGetterFor('step', function () {
     var cursor = Reveal.getIndices();
     return cursor.h + '.0';
   })
 
-  .getter('notes', function () {
+  .setGetterFor('notes', function () {
     var notes = document.querySelector('.slides > section.present aside.notes');
     return notes ? notes.innerHTML : '';
   })

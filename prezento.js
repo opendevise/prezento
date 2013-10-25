@@ -37,11 +37,6 @@
       target.postMessage(msgData, '*');
     },
 
-    arrayRemove: function (array, element) {
-      var idx = array.indexOf(element);
-      array.splice(idx, 1);
-    },
-
     getMetas: function () {
       var metasDomList = document.querySelectorAll('meta'),
         metasArray = Array.prototype.slice.call(metasDomList),
@@ -100,17 +95,12 @@
 
       slideDeckProxy.on = function (event, callback) {
         if (event === 'ready') {
-          (iframe || contentWindow).addEventListener('load', function () {
+          iframe.addEventListener('load', function () {
             slideDeckProxy.init();
           });
         }
 
         eventCallbacks[event].push(callback);
-        return slideDeckProxy;
-      };
-
-      slideDeckProxy.off = function (event, callback) {
-        utils.arrayRemove(eventCallbacks[event], callback);
         return slideDeckProxy;
       };
 
@@ -144,6 +134,7 @@
         return;
       }
 
+      // Additionnal automatic informations
       slideDeckInfos.title = document.title;
       slideDeckInfos.author = metas.author;
       slideDeckInfos.description = metas.description;
@@ -164,12 +155,7 @@
         return shellProxy;
       };
 
-      shellProxy.off = function (action, callback) {
-        utils.arrayRemove(actionCallbacks[action], callback);
-        return shellProxy;
-      };
-
-      shellProxy.getter = function (property, callback) {
+      shellProxy.setGetterFor = function (property, callback) {
         getters[property] = callback;
         return shellProxy;
       };
@@ -177,7 +163,8 @@
       root.addEventListener('message', function (msgEvent) {
         var message = utils.parseMsg(msgEvent);
 
-        if (message) {
+        // getters for cursor and step must be added
+        if (message && getters.cursor && getters.step) {
           target = target || msgEvent.source;
 
           actionCallbacks[message.actionOrEvent].forEach(function (callback) {

@@ -13,11 +13,11 @@ var shell = prezento
     features: []
   })
 
-  .getter('cursor', function () {
+  .setGetterFor('cursor', function () {
     return document.querySelector('.active').id;
   })
 
-  .getter('step', function () {
+  .setGetterFor('step', function () {
     return document.querySelector('.active').id;
   })
 

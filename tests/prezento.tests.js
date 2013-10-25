@@ -12,8 +12,7 @@ describe('Prezento :', function () {
     goodSelector = '#foobar',
 
     goodSlidesInfos = {
-      title: 'A title',
-      slidesCount: 42,
+      steps: [],
       features: []
     },
 
@@ -21,7 +20,6 @@ describe('Prezento :', function () {
       expect(slideDeckProxy).not.toBeUndefined();
 
       expect(slideDeckProxy.on).toEqual(jasmine.any(Function));
-      expect(slideDeckProxy.off).toEqual(jasmine.any(Function));
 
       expect(slideDeckProxy.init).toEqual(jasmine.any(Function));
       expect(slideDeckProxy.goTo).toEqual(jasmine.any(Function));
@@ -31,16 +29,12 @@ describe('Prezento :', function () {
       expect(slideDeckProxy.last).toEqual(jasmine.any(Function));
       expect(slideDeckProxy.toggleMultimedia).toEqual(jasmine.any(Function));
       expect(slideDeckProxy.toggleOverview).toEqual(jasmine.any(Function));
-      expect(slideDeckProxy.setTheme).toEqual(jasmine.any(Function));
-      expect(slideDeckProxy.setNextTheme).toEqual(jasmine.any(Function));
-      expect(slideDeckProxy.setPreviousTheme).toEqual(jasmine.any(Function));
     },
 
     expectValidShellProxy = function (shellProxy) {
       expect(shellProxy).not.toBeUndefined();
 
       expect(shellProxy.on).toEqual(jasmine.any(Function));
-      expect(shellProxy.off).toEqual(jasmine.any(Function));
 
       expect(shellProxy.notifyReady).toEqual(jasmine.any(Function));
       expect(shellProxy.notifyCursor).toEqual(jasmine.any(Function));
@@ -50,37 +44,42 @@ describe('Prezento :', function () {
     noop = function () {
     },
 
+    triggerLoadOnFakeContentWindow = function () {
+    },
+
     triggerMessageEvent;
 
   beforeEach(function () {
     console.error = jasmine.createSpy('console.error');
 
     fakeIframe = fakeIframe = {
+      addEventListener: jasmine.createSpy('contentWindow.addEventListener').andCallFake(function (event, callback) {
+        if (event === 'load') {
+          triggerLoadOnFakeContentWindow = callback;
+        }
+      }),
       contentWindow: {
         postMessage: jasmine.createSpy('contentWindow.postMessage'),
         addEventListener: jasmine.createSpy('contentWindow.addEventListener')
       }
     };
 
-    document.querySelector = function (selector) {
+    document.querySelector = jasmine.createSpy('querySelector').andCallFake(function (selector) {
       if (selector === goodSelector) {
         return fakeIframe;
       } else {
         return null;
       }
-    };
+    });
 
-    window.addEventListener = function (eventType, callback) {
+    window.addEventListener = jasmine.createSpy('addEventListener').andCallFake(function (eventType, callback) {
       if (eventType === 'message') {
         triggerMessageEvent = callback;
       }
-    };
-
-    spyOn(document, 'querySelector').andCallThrough();
-    spyOn(window, 'addEventListener').andCallThrough();
+    });
   });
 
-  describe('createSlideDeckProxy', function () {
+  describe('createSlideDeckProxy()', function () {
 
     it('should return a valid slide deck proxy if initialized with a good selector', function () {
       // given
@@ -172,12 +171,9 @@ describe('Prezento :', function () {
       slideDeckProxy.last();
       slideDeckProxy.toggleMultimedia();
       slideDeckProxy.toggleOverview();
-      slideDeckProxy.setTheme('theme-one');
-      slideDeckProxy.setNextTheme();
-      slideDeckProxy.setPreviousTheme();
 
       // then
-      expect(fakeIframe.contentWindow.postMessage.callCount).toBe(11);
+      expect(fakeIframe.contentWindow.postMessage.callCount).toBe(8);
     });
 
     it('should call appropriate callback when events are received', function () {
@@ -218,23 +214,22 @@ describe('Prezento :', function () {
       expect(spyThree).toHaveBeenCalled();
     });
 
-    it('should not call unregistered callbacks when an event is received', function () {
+    it('should do nothing when an invalid event is received', function () {
       // given
-      var spyOne = jasmine.createSpy('spyOne'),
-        spyTwo = jasmine.createSpy('spyTwo'),
-        spyThree = jasmine.createSpy('spyThree');
+      var spyReady = jasmine.createSpy('spyReady'),
+        spyCursor = jasmine.createSpy('spyCursor'),
+        spyNotes = jasmine.createSpy('spyNotes');
 
       // when
-      slideDeckProxy.on('ready', spyOne);
-      slideDeckProxy.on('ready', spyTwo);
-      slideDeckProxy.on('ready', spyThree);
-      slideDeckProxy.off('ready', spyOne);
-      triggerMessageEvent({data: ['ready', {foo: 'bar'}]});
+      slideDeckProxy.on('ready', spyReady);
+      slideDeckProxy.on('cursor', spyCursor);
+      slideDeckProxy.on('notes', spyNotes);
+      triggerMessageEvent({data: ['unknownEvent', {foo: 'bar'}]});
 
       // then
-      expect(spyOne).not.toHaveBeenCalled();
-      expect(spyTwo).toHaveBeenCalled();
-      expect(spyThree).toHaveBeenCalled();
+      expect(spyReady).not.toHaveBeenCalled();
+      expect(spyCursor).not.toHaveBeenCalled();
+      expect(spyNotes).not.toHaveBeenCalled();
     });
 
     it('should listen to load events on iframe when ready event callback is added', function () {
@@ -243,7 +238,20 @@ describe('Prezento :', function () {
       });
 
       // then
-      expect(fakeIframe.contentWindow.addEventListener).toHaveBeenCalledWith('load', jasmine.any(Function));
+      expect(fakeIframe.addEventListener).toHaveBeenCalledWith('load', jasmine.any(Function));
+    });
+
+    it('should call slideDeckProxy init function when iframe is loaded', function () {
+      // given
+      slideDeckProxy.init = jasmine.createSpy('slideDeckProxy.init');
+
+      // when
+      slideDeckProxy.on('ready', function () {
+      });
+      triggerLoadOnFakeContentWindow();
+
+      // then
+      expect(slideDeckProxy.init).toHaveBeenCalled();
     });
 
     it('event registrations can be chained', function () {
@@ -254,18 +262,9 @@ describe('Prezento :', function () {
       // then
       expect(onReturn).toBe(slideDeckProxy);
     });
-
-    it('event unregistrations can be chained', function () {
-      // when
-      var offReturn = slideDeckProxy.off('ready', function () {
-      });
-
-      // then
-      expect(offReturn).toBe(slideDeckProxy);
-    });
   });
 
-  describe('createShellProxy', function () {
+  describe('createShellProxy()', function () {
 
     it('should return a valid shell proxy if initialized with a good slidesInfos object', function () {
       // given
@@ -318,6 +317,10 @@ describe('Prezento :', function () {
 
     beforeEach(function () {
       shellProxy = prezento.createShellProxy(goodSlidesInfos);
+
+      shellProxy.setGetterFor('cursor', noop);
+      shellProxy.setGetterFor('step', noop);
+
       triggerMessageEvent({
         data: ['init'],
         source: fakeIframe.contentWindow
@@ -331,7 +334,7 @@ describe('Prezento :', function () {
       shellProxy.notifyNotes('Lorem ipsum');
 
       // then
-      expect(fakeIframe.contentWindow.postMessage.callCount).toBe(3 + 1);
+      expect(fakeIframe.contentWindow.postMessage.callCount).toBe(3 + 3);
     });
 
     it('should call appropriate callback when actions are received', function () {
@@ -343,10 +346,7 @@ describe('Prezento :', function () {
         spyFirst = jasmine.createSpy('spyFirst'),
         spyLast = jasmine.createSpy('spyLast'),
         spyToggleMultimedia = jasmine.createSpy('spyToggleMultimedia'),
-        spyToggleOverview = jasmine.createSpy('spyToggleOverview'),
-        spySetTheme = jasmine.createSpy('spySetTheme'),
-        spySetNextTheme = jasmine.createSpy('spySetNextTheme'),
-        spySetPreviousTheme = jasmine.createSpy('spySetPreviousTheme');
+        spyToggleOverview = jasmine.createSpy('spyToggleOverview');
 
       // when
       shellProxy.on('init', spyInit);
@@ -357,9 +357,6 @@ describe('Prezento :', function () {
       shellProxy.on('last', spyLast);
       shellProxy.on('toggleMultimedia', spyToggleMultimedia);
       shellProxy.on('toggleOverview', spyToggleOverview);
-      shellProxy.on('setTheme', spySetTheme);
-      shellProxy.on('setNextTheme', spySetNextTheme);
-      shellProxy.on('setPreviousTheme', spySetPreviousTheme);
       triggerMessageEvent({data: ['init']});
       triggerMessageEvent({data: ['goTo', '4.2']});
       triggerMessageEvent({data: ['prev']});
@@ -368,9 +365,6 @@ describe('Prezento :', function () {
       triggerMessageEvent({data: ['last']});
       triggerMessageEvent({data: ['toggleMultimedia']});
       triggerMessageEvent({data: ['toggleOverview']});
-      triggerMessageEvent({data: ['setTheme', 'theme-one']});
-      triggerMessageEvent({data: ['setNextTheme']});
-      triggerMessageEvent({data: ['setPreviousTheme']});
 
       // then
       expect(spyInit).toHaveBeenCalled();
@@ -381,9 +375,6 @@ describe('Prezento :', function () {
       expect(spyLast).toHaveBeenCalled();
       expect(spyToggleMultimedia).toHaveBeenCalled();
       expect(spyToggleOverview).toHaveBeenCalled();
-      expect(spySetTheme).toHaveBeenCalled();
-      expect(spySetNextTheme).toHaveBeenCalled();
-      expect(spySetPreviousTheme).toHaveBeenCalled();
     });
 
     it('should call multiple registered callbacks when an event is received', function () {
@@ -404,23 +395,37 @@ describe('Prezento :', function () {
       expect(spyThree).toHaveBeenCalled();
     });
 
-    it('should not call unregistered callbacks when an event is received', function () {
+    it('should do nothing when an invalid event is received', function () {
       // given
-      var spyOne = jasmine.createSpy('spyOne'),
-        spyTwo = jasmine.createSpy('spyTwo'),
-        spyThree = jasmine.createSpy('spyThree');
+      var spyInit = jasmine.createSpy('spyInit'),
+        spyGoTo = jasmine.createSpy('spyGoTo'),
+        spyPrev = jasmine.createSpy('spyPrev'),
+        spyNext = jasmine.createSpy('spyNext'),
+        spyFirst = jasmine.createSpy('spyFirst'),
+        spyLast = jasmine.createSpy('spyLast'),
+        spyToggleMultimedia = jasmine.createSpy('spyToggleMultimedia'),
+        spyToggleOverview = jasmine.createSpy('spyToggleOverview');
 
       // when
-      shellProxy.on('goTo', spyOne);
-      shellProxy.on('goTo', spyTwo);
-      shellProxy.on('goTo', spyThree);
-      shellProxy.off('goTo', spyOne);
-      triggerMessageEvent({data: ['goTo', '4.2']});
+      shellProxy.on('init', spyInit);
+      shellProxy.on('goTo', spyGoTo);
+      shellProxy.on('prev', spyPrev);
+      shellProxy.on('next', spyNext);
+      shellProxy.on('first', spyFirst);
+      shellProxy.on('last', spyLast);
+      shellProxy.on('toggleMultimedia', spyToggleMultimedia);
+      shellProxy.on('toggleOverview', spyToggleOverview);
+      triggerMessageEvent({data: ['unknownAction']});
 
       // then
-      expect(spyOne).not.toHaveBeenCalled();
-      expect(spyTwo).toHaveBeenCalled();
-      expect(spyThree).toHaveBeenCalled();
+      expect(spyInit).not.toHaveBeenCalled();
+      expect(spyGoTo).not.toHaveBeenCalled();
+      expect(spyPrev).not.toHaveBeenCalled();
+      expect(spyNext).not.toHaveBeenCalled();
+      expect(spyFirst).not.toHaveBeenCalled();
+      expect(spyLast).not.toHaveBeenCalled();
+      expect(spyToggleMultimedia).not.toHaveBeenCalled();
+      expect(spyToggleOverview).not.toHaveBeenCalled();
     });
 
     it('event registrations can be chained', function () {
@@ -431,12 +436,12 @@ describe('Prezento :', function () {
       expect(onReturn).toBe(shellProxy);
     });
 
-    it('event unregistrations can be chained', function () {
+    it('getter sets can be chained', function () {
       // when
-      var offReturn = shellProxy.off('goTo', noop);
+      var setGetterForReturn = shellProxy.setGetterFor('cursor', noop);
 
       // then
-      expect(offReturn).toBe(shellProxy);
+      expect(setGetterForReturn).toBe(shellProxy);
     });
   });
 });

@@ -12,15 +12,15 @@ prezento
     features: ["multimedia", "overview", "notes"]
   })
 
-  .getter('cursor', function () {
+  .setGetterFor('cursor', function () {
     return location.hash.slice(1) || '1.0';
   })
 
-  .getter('step', function () {
+  .setGetterFor('step', function () {
     return (location.hash.slice(1).split('.').shift() || '1') + '.0';
   })
 
-  .getter('notes', function () {
+  .setGetterFor('notes', function () {
     return Dz.getNotes(Dz.idx);
   })
 

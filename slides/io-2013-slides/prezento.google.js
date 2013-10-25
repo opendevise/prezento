@@ -10,11 +10,11 @@ var shell = prezento
     features: ["overview"]
   })
 
-  .getter('cursor', function () {
+  .setGetterFor('cursor', function () {
     return location.hash.slice(1);
   })
 
-  .getter('step', function () {
+  .setGetterFor('step', function () {
     return location.hash.slice(1);
   });
 

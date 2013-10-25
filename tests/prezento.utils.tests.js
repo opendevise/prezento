@@ -5,7 +5,7 @@
 describe('Prezento utils :', function () {
   var utils = prezento._utils;
 
-  describe('parseMsg', function () {
+  describe('parseMsg()', function () {
 
     it('should return null and log error if msgEvent.data is not an array', function () {
       // given
@@ -121,7 +121,7 @@ describe('Prezento utils :', function () {
     });
   });
 
-  describe('ucfirst', function () {
+  describe('ucfirst()', function () {
 
     it('should uppercase first letter of lowercase strings', function () {
       // given
@@ -157,7 +157,7 @@ describe('Prezento utils :', function () {
     });
   });
 
-  describe('postMsg', function () {
+  describe('postMsg()', function () {
 
     it('should call postMessage on target', function () {
       // given
@@ -228,61 +228,23 @@ describe('Prezento utils :', function () {
     });
   });
 
-  describe('arrayRemove', function () {
+  describe('getMetas()', function () {
 
-    it('should let empty array empty', function () {
+    it('should get meta from DOM', function () {
+
       // given
-      var array = [];
+      var author = 'Hakim El Hattab',
+        description = 'A framework for easily creating beautiful presentations using HTML',
+        metasMarkup = '<meta name="description" content="' + description + '"><meta name="author" content="' + author + '">';
+
+      document.body.innerHTML += metasMarkup;
 
       // when
-      utils.arrayRemove(array, 'one');
+      var metas = utils.getMetas();
 
       // then
-      expect(array).toEqual([]);
-    });
-
-    it('should remove existing element from one element array', function () {
-      // given
-      var array = ['one'];
-
-      // when
-      utils.arrayRemove(array, 'one');
-
-      // then
-      expect(array).toEqual([]);
-    });
-
-    it('should remove first element from more than one element array', function () {
-      // given
-      var array = ['one', 'two', 'three'];
-
-      // when
-      utils.arrayRemove(array, 'one');
-
-      // then
-      expect(array).toEqual(['two', 'three']);
-    });
-
-    it('should remove middle element from more than one element array', function () {
-      // given
-      var array = ['one', 'two', 'three'];
-
-      // when
-      utils.arrayRemove(array, 'two');
-
-      // then
-      expect(array).toEqual(['one', 'three']);
-    });
-
-    it('should remove last element from more than one element array', function () {
-      // given
-      var array = ['one', 'two', 'three'];
-
-      // when
-      utils.arrayRemove(array, 'three');
-
-      // then
-      expect(array).toEqual(['one', 'two']);
+      expect(metas.description).toBe(description);
+      expect(metas.author).toBe(author);
     });
   });
 });
