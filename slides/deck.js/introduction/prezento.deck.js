@@ -4,38 +4,48 @@ $.deck('.slide')
 
 prezento
 
-  .createShellProxy({
-    title: document.title,
-    steps: $.deck('getSlides').map(function (slide) {
-      return slide.attr('id');
-    }),
-    features: ['overview']
-  })
+    .createShellProxy({
+      title: document.title,
+      steps: $.deck('getSlides').map(function (slide) {
+        return slide.attr('id');
+      }),
+      features: ['overview']
+    })
 
-  .getter('cursor', function () {
-    return $.deck('getSlide').attr('id');
-  })
+    .configGetters({
 
-  .getter('step', function () {
-    return $.deck('getSlide').attr('id');
-  })
+      cursor: function () {
+        return $.deck('getSlide').attr('id');
+      },
 
-  .on('goTo', function (cursor) {
-    $.deck('go', cursor);
-  })
+      step: function () {
+        return $.deck('getSlide').attr('id');
+      },
 
-  .on('prev', function () {
-    $.deck('prev');
-  })
-  .on('next', function () {
-    $.deck('next');
-  })
-  .on('first', function () {
-    $.deck('go', 0);
-  })
-  .on('last', function () {
-    $.deck('go', $.deck('getSlides').length - 1);
-  })
-  .on('toggleOverview', function () {
-    $.deck('toggleMenu');
-  });
+      notes: function () {
+        var notes = document.querySelector('.slides > section.present aside.notes');
+        return notes ? notes.innerHTML : '';
+      }
+    })
+
+    .configListeners({
+
+      goTo: function (cursor) {
+        $.deck('go', cursor);
+      },
+      prev: function () {
+        $.deck('prev');
+      },
+      next: function () {
+        $.deck('next');
+      },
+      first: function () {
+        $.deck('go', 0);
+      },
+      last: function () {
+        $.deck('go', $.deck('getSlides').length - 1);
+      },
+      toggleOverview: function () {
+        $.deck('toggleMenu');
+      }
+    });

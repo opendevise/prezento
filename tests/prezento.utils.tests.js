@@ -6,34 +6,36 @@ describe('prezento._utils', function () {
 
   describe('parseMsg()', function () {
 
-    var parseMsg = prezento._utils.parseMsg;
+    var parseMsg = prezento._utils.parseMsg,
+        callback;
 
-    it('should return null if msgEvt.data is not an array', function () {
-      expect(parseMsg({ data: 'foobar' })).toBe(null);
+    beforeEach(function () {
+      callback = jasmine.createSpy('callback')
     });
 
-    it('should return null if msgEvt.data array length is not at least 1', function () {
-      expect(parseMsg({ data: [] })).toBe(null);
+    it('should not execute callback if msgEvt.data is not an array', function () {
+      parseMsg({ data: 'foobar' }, callback);
+      expect(callback).not.toHaveBeenCalled();
     });
 
-    it('should return null if msgEvt.data array first element is not an event or an action', function () {
-      expect(parseMsg({ data: ['foobar'] })).toBe(null);
+    it('should not execute callback if msgEvt.data array length is not at least 1', function () {
+      parseMsg({ data: [] }, callback);
+      expect(callback).not.toHaveBeenCalled();
     });
 
-    it('should identify event or action', function () {
-      expect(parseMsg({ data: ['ready'] }).eventOrAction).toBe('ready');
+    it('should not execute callback if msgEvt.data array first element is not an event or an action', function () {
+      parseMsg({ data: ['foobar'] }, callback);
+      expect(callback).not.toHaveBeenCalled();
     });
 
-    it('should identify and accept empty args', function () {
-      expect(parseMsg({ data: ['ready'] }).args).toEqual([]);
+    it('should execute callback with event or action and accept empty args', function () {
+      parseMsg({ data: ['next'] }, callback);
+      expect(callback).toHaveBeenCalledWith('next', []);
     });
 
-    it('should identify and accept one arg', function () {
-      expect(parseMsg({ data: ['goTo', '4.2'] }).args).toEqual(['4.2']);
-    });
-
-    it('should identify and accept more than one arg', function () {
-      expect(parseMsg({ data: ['goTo', '4.2', 'fakeArg1', 'fakeArg2'] }).args).toEqual(['4.2', 'fakeArg1', 'fakeArg2']);
+    it('should execute callback with event or action and accept one arg', function () {
+      parseMsg({ data: ['goTo', '4.2'] }, callback);
+      expect(callback).toHaveBeenCalledWith('goTo', ['4.2']);
     });
   });
 
@@ -98,6 +100,31 @@ describe('prezento._utils', function () {
       var metas = getMetas();
       expect(metas.aaa).toBe('aaa content');
       expect(metas.bbb).toBe('bbb content');
+    });
+  });
+
+  describe('mergeProps()', function () {
+
+    var mergeProps = prezento._utils.mergeProps;
+
+    it('should overide or set mergedObject property values defined on newStuffsObject and let other', function () {
+
+      var mergedObject = {
+            aaa: 'aaa',
+            bbb: 'bbb',
+            ccc: 'ccc'
+          },
+          newStuffsObject = {
+            bbb: 'BBB',
+            ddd: 'DDD'
+          };
+
+      mergeProps(mergedObject, newStuffsObject);
+
+      expect(mergedObject.aaa).toBe('aaa');
+      expect(mergedObject.bbb).toBe('BBB');
+      expect(mergedObject.ccc).toBe('ccc');
+      expect(mergedObject.ddd).toBe('DDD');
     });
   });
 });

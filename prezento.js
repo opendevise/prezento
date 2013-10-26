@@ -8,22 +8,19 @@
 
   var utils = {
 
-    parseMsg: function (msgEvt) {
+    parseMsg: function (msgEvt, callback) {
 
       // Message event data type must be an array with length >= 1
       if (!Array.isArray(msgEvt.data) || msgEvt.data.length < 1) {
-        return null;
+        return;
       }
 
       // Message event data array first item must be an event or an action
       if (eventsAndActions.indexOf(msgEvt.data[0]) === -1) {
-        return null;
+        return;
       }
 
-      return {
-        eventOrAction: msgEvt.data[0],
-        args: msgEvt.data.slice(1)
-      };
+      callback(msgEvt.data[0], msgEvt.data.slice(1));
     },
 
     ucfirst: function (str) {
@@ -50,6 +47,12 @@
       });
 
       return metasObj;
+    },
+
+    mergeProps: function (mergedObject, newStuffsObject) {
+      for (var prop in newStuffsObject) {
+        mergedObject[prop] = newStuffsObject[prop];
+      }
     }
   };
 
@@ -59,33 +62,45 @@
     createSlideDeckProxy: function (initArg) {
 
       var iframe,
-          contentWindow,
           target,
-          slideDeckProxy = {},
-          eventCallbacks = {};
+          eventListeners = {},
+          slideDeckProxy = {};
 
-      // CSS selector initialization
+      // initArg can be a CSS selector for an iframe element
       if (typeof initArg === 'string') {
-        iframe = document.querySelector(initArg);
-      } else {
+        initArg = document.querySelector(initArg);
+      }
+
+      // initArg can be an iframe element
+      if (initArg && initArg.contentWindow != null) {
         iframe = initArg;
+        initArg = initArg.contentWindow;
       }
 
-      // iframe element initialization
-      if (iframe && iframe.contentWindow != null) {
-        contentWindow = iframe.contentWindow;
+      // initArg can be an object with a postMessage method (window or iframe contentWindow)
+      if (initArg && initArg.postMessage != null) {
+        target = initArg;
       } else {
-        contentWindow = iframe;
+        // initArgs is incorrect
+        return null;
       }
 
-      // contentWindow object initialization
-      if (contentWindow && contentWindow.postMessage != null) {
-        target = contentWindow;
-      } else {
-        console.error('Invalid prezento reference for frame. You must pass a CSS selector, a contentWindow or an iframe element', initArg);
-        return;
-      }
+      // Configure event listeners with config object
+      slideDeckProxy.configListeners = function (listenersConfig) {
 
+        utils.mergeProps(eventListeners, listenersConfig);
+
+        // Add load listener on slide deck when shell configures ready listener
+        if (listenersConfig.hasOwnProperty('ready')) {
+          (iframe || target).addEventListener('load', function () {
+            slideDeckProxy.init();
+          }, false);
+        }
+
+        return slideDeckProxy;
+      };
+
+      // Expose all actions as direct methods
       actions.forEach(function (action) {
         slideDeckProxy[action] = function () {
           utils.postMsg(target, action, arguments);
@@ -93,29 +108,15 @@
         };
       });
 
-      events.forEach(function (event) {
-        eventCallbacks[event] = [];
-      });
+      root.addEventListener('message', function (msgEvt) {
 
-      slideDeckProxy.on = function (event, callback) {
-        if (event === 'ready') {
-          iframe.addEventListener('load', function () {
-            slideDeckProxy.init();
-          });
-        }
+        utils.parseMsg(msgEvt, function (event, args) {
+          var listener = eventListeners[event];
 
-        eventCallbacks[event].push(callback);
-        return slideDeckProxy;
-      };
-
-      root.addEventListener('message', function (msgEvent) {
-        var message = utils.parseMsg(msgEvent);
-
-        if (message) {
-          eventCallbacks[message.eventOrAction].forEach(function (callback) {
-            callback.apply(null, message.args);
-          });
-        }
+          if (listener) {
+            listener.apply(null, args);
+          }
+        });
       }, false);
 
       return slideDeckProxy;
@@ -124,25 +125,35 @@
     createShellProxy: function (slideDeckInfos) {
 
       var target,
-          shellProxy = {},
-          actionCallbacks = {},
-          getters = {},
-          metas = utils.getMetas();
+          actionListeners = {},
+          eventArgsGetters = {},
+          shellProxy = {};
 
-      // slideDeckInfos object should have the proper informations
       if (slideDeckInfos &&
           Array.isArray(slideDeckInfos.steps) &&
           Array.isArray(slideDeckInfos.features)) {
       } else {
-        console.error('Invalid prezento slide deck info object', slideDeckInfos);
-        return;
+        // slideDeckInfos is incorrect
+        return null;
       }
 
       // Additionnal automatic informations
       slideDeckInfos.title = document.title;
-      slideDeckInfos.author = metas.author;
-      slideDeckInfos.description = metas.description;
+      slideDeckInfos.metas = utils.getMetas();
 
+      // Configure action listeners with config object
+      shellProxy.configListeners = function (listenersConfig) {
+        utils.mergeProps(actionListeners, listenersConfig);
+        return shellProxy;
+      };
+
+      // Configure getters for event arguments with config object
+      shellProxy.configGetters = function (gettersConfig) {
+        utils.mergeProps(eventArgsGetters, gettersConfig);
+        return shellProxy;
+      };
+
+      // Expose all events as direct methods "notify[eventName]()"
       events.forEach(function (event) {
         shellProxy['notify' + utils.ucfirst(event)] = function () {
           utils.postMsg(target, event, arguments);
@@ -150,48 +161,42 @@
         };
       });
 
-      actions.forEach(function (action) {
-        actionCallbacks[action] = [];
-      });
+      root.addEventListener('message', function (msgEvt) {
 
-      shellProxy.on = function (action, callback) {
-        actionCallbacks[action].push(callback);
-        return shellProxy;
-      };
+        utils.parseMsg(msgEvt, function (action, args) {
 
-      shellProxy.setGetterFor = function (property, callback) {
-        getters[property] = callback;
-        return shellProxy;
-      };
+          // Getters for cursor and step must be configured
+          if (eventArgsGetters.cursor && eventArgsGetters.step) {
+            target = target || msgEvt.source;
 
-      root.addEventListener('message', function (msgEvent) {
-        var message = utils.parseMsg(msgEvent);
+            if (action === 'init') {
+              shellProxy.notifyReady(slideDeckInfos);
+            }
 
-        // getters for cursor and step must be added
-        if (message && getters.cursor && getters.step) {
-          target = target || msgEvent.source;
+            var listener = actionListeners[action];
+            if (listener) {
+              listener.apply(null, args);
+            }
 
-          actionCallbacks[message.eventOrAction].forEach(function (callback) {
-            callback.apply(null, message.args);
-          });
+            shellProxy.notifyCursor(eventArgsGetters.cursor());
+            shellProxy.notifyStep(eventArgsGetters.step());
 
-          shellProxy.notifyCursor(getters.cursor());
-          shellProxy.notifyStep(getters.step());
-          if (getters.notes) {
-            shellProxy.notifyNotes(getters.notes());
+            if (eventArgsGetters.notes) {
+              shellProxy.notifyNotes(eventArgsGetters.notes());
+            }
           }
-        }
+        });
       }, false);
-
-      shellProxy.on('init', function () {
-        shellProxy.notifyReady(slideDeckInfos);
-      });
 
       return shellProxy;
     },
 
     // Expose util functions for unit tests
-    _utils: utils
+    _utils: utils,
+
+    // Expose actions and events functions for unit tests
+    _events: events,
+    _actions: actions
   };
 
 })();

@@ -2,7 +2,7 @@
 
 var searchParams = (function () {
   var params = /^\?(.*?=.*?)(?:&(.*?=.*?))*$/.exec(location.search),
-    paramsObj = {};
+      paramsObj = {};
 
   for (var i = 1; params[i]; i++) {
     var keyValue = params[i].split('=');
@@ -25,15 +25,17 @@ var $ = (function () {
 })();
 
 $('iframe').src = searchParams.url;
+//var popup = window.open(searchParams.url);
 
 var steps;
 
-var slideDeck = prezento.createSlideDeckProxy('iframe')
+var configListeners = {
 
-  .on('ready', function (slideDeckInfos) {
+  ready: function (slideDeckInfos) {
+
     $('.title').innerHTML = slideDeckInfos.title;
-    $('.author').innerHTML = slideDeckInfos.author || '';
-    $('.description').innerHTML = slideDeckInfos.description || '';
+    $('.author').innerHTML = slideDeckInfos.metas.author || '';
+    $('.description').innerHTML = slideDeckInfos.metas.description || '';
 
     steps = slideDeckInfos.steps;
     $('.steps-count').innerHTML = steps.length;
@@ -47,19 +49,27 @@ var slideDeck = prezento.createSlideDeckProxy('iframe')
     if (slideDeckInfos.features.indexOf('overview') !== -1) {
       $('[data-action="toggleOverview"]').disabled = false;
     }
-  })
+  },
 
-  .on('cursor', function (cursor) {
+  cursor: function (cursor) {
     $('.current-cursor').value = cursor;
-  })
+  },
 
-  .on('step', function (step) {
+  step: function (step) {
     $('.current-step').innerHTML = steps.indexOf(step) + 1;
-  })
+  },
 
-  .on('notes', function (notes) {
+  notes: function (notes) {
     $('.current-notes').innerHTML = notes;
-  });
+  }
+};
+
+var slideDeck = prezento.createSlideDeckProxy('iframe')
+    .configListeners(configListeners);
+
+//var popupSlideDeck = prezento.createSlideDeckProxy(popup)
+//    .configListeners(configListeners);
+
 
 var addClickListener = function (selector, callback) {
   $(selector).addEventListener('click', function () {
