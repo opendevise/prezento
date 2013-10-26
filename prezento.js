@@ -2,46 +2,48 @@
   'use strict';
 
   var root = this,
-    events = 'ready cursor step notes'.split(' '),
-    actions = 'init goTo prev next first last toggleMultimedia toggleOverview'.split(' ');
+      events = 'ready cursor step notes'.split(' '),
+      actions = 'init goTo prev next first last toggleMultimedia toggleOverview'.split(' '),
+      eventsAndActions = events.concat(actions);
 
   var utils = {
 
-    parseMsg: function (msgEvent) {
-      var message = {};
+    parseMsg: function (msgEvt) {
 
-      if (!Array.isArray(msgEvent.data) || msgEvent.data.length < 1) {
-        console.error('Invalid prezento data format. Must be an array with action or event name and optionnal arguments : ["name", "arg0", "arg1", ...]', msgEvent.data);
+      // Message event data type must be an array with length >= 1
+      if (!Array.isArray(msgEvt.data) || msgEvt.data.length < 1) {
         return null;
       }
 
-      if (actions.indexOf(msgEvent.data[0]) !== -1 || events.indexOf(msgEvent.data[0]) !== -1) {
-        message.actionOrEvent = msgEvent.data[0];
-      } else {
-        console.error('Invalid prezento action or event', msgEvent.data[0]);
+      // Message event data array first item must be an event or an action
+      if (eventsAndActions.indexOf(msgEvt.data[0]) === -1) {
         return null;
       }
 
-      message.args = msgEvent.data.slice(1);
-
-      return message;
+      return {
+        eventOrAction: msgEvt.data[0],
+        args: msgEvt.data.slice(1)
+      };
     },
 
     ucfirst: function (str) {
       return str[0].toUpperCase() + str.slice(1);
     },
 
-    postMsg: function (target, actionOrEvent, args) {
+    postMsg: function (target, eventOrAction, args) {
+
+      // Transform function arguments iterable object to array
       var argsArray = Array.prototype.slice.call(args),
-        msgData = [actionOrEvent].concat(argsArray);
+          msgData = [eventOrAction].concat(argsArray);
 
       target.postMessage(msgData, '*');
     },
 
     getMetas: function () {
+
       var metasDomList = document.querySelectorAll('meta'),
-        metasArray = Array.prototype.slice.call(metasDomList),
-        metasObj = {};
+          metasArray = Array.prototype.slice.call(metasDomList),
+          metasObj = {};
 
       metasArray.forEach(function (meta) {
         metasObj[meta.name] = meta.content;
@@ -57,10 +59,10 @@
     createSlideDeckProxy: function (initArg) {
 
       var iframe,
-        contentWindow,
-        target,
-        slideDeckProxy = {},
-        eventCallbacks = {};
+          contentWindow,
+          target,
+          slideDeckProxy = {},
+          eventCallbacks = {};
 
       // CSS selector initialization
       if (typeof initArg === 'string') {
@@ -110,7 +112,7 @@
         var message = utils.parseMsg(msgEvent);
 
         if (message) {
-          eventCallbacks[message.actionOrEvent].forEach(function (callback) {
+          eventCallbacks[message.eventOrAction].forEach(function (callback) {
             callback.apply(null, message.args);
           });
         }
@@ -122,15 +124,15 @@
     createShellProxy: function (slideDeckInfos) {
 
       var target,
-        shellProxy = {},
-        actionCallbacks = {},
-        getters = {},
-        metas = utils.getMetas();
+          shellProxy = {},
+          actionCallbacks = {},
+          getters = {},
+          metas = utils.getMetas();
 
       // slideDeckInfos object should have the proper informations
       if (slideDeckInfos &&
-        Array.isArray(slideDeckInfos.steps) &&
-        Array.isArray(slideDeckInfos.features)) {
+          Array.isArray(slideDeckInfos.steps) &&
+          Array.isArray(slideDeckInfos.features)) {
       } else {
         console.error('Invalid prezento slide deck info object', slideDeckInfos);
         return;
@@ -169,7 +171,7 @@
         if (message && getters.cursor && getters.step) {
           target = target || msgEvent.source;
 
-          actionCallbacks[message.actionOrEvent].forEach(function (callback) {
+          actionCallbacks[message.eventOrAction].forEach(function (callback) {
             callback.apply(null, message.args);
           });
 
