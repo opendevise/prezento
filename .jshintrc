@@ -4,7 +4,7 @@
     "camelcase": true,
     "curly": true,
     "eqeqeq": true,
-    "eqnull": false,
+    "eqnull": true,
     "esnext": true,
     "immed": true,
     "latedef": true,
