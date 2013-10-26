@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  var root = this,
+  var root = window,
       events = 'ready cursor step notes'.split(' '),
       actions = 'init goTo prev next first last toggleMultimedia toggleOverview'.split(' '),
       eventsAndActions = events.concat(actions);
@@ -194,4 +194,4 @@
     _utils: utils
   };
 
-}).call(this);
+})();
