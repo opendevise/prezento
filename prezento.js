@@ -6,6 +6,7 @@
     actions = 'init goTo prev next first last toggleMultimedia toggleOverview'.split(' ');
 
   var utils = {
+
     parseMsg: function (msgEvent) {
       var message = {};
 
@@ -52,6 +53,7 @@
 
   // Expose prezento as global
   root.prezento = {
+
     createSlideDeckProxy: function (initArg) {
 
       var iframe,
