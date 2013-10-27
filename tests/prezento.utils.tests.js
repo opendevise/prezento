@@ -95,11 +95,24 @@ describe('prezento._utils', function () {
 
     var getMetas = prezento._utils.getMetas;
 
+    beforeEach(function () {
+      var metas = Array.prototype.slice.call(document.head.querySelectorAll('meta'));
+      metas.forEach(function (meta) {
+        meta.parentNode.removeChild(meta);
+      });
+    });
+
     it('should get meta names and contents from DOM', function () {
-      document.body.innerHTML += '<meta name="aaa" content="aaa content"><meta name="bbb" content="bbb content">';
+      document.head.innerHTML += '<meta name="aaa" content="aaa content"><meta name="bbb" content="bbb content">';
       var metas = getMetas();
       expect(metas.aaa).toBe('aaa content');
       expect(metas.bbb).toBe('bbb content');
+    });
+
+    it('should ignore metas that do not have a name and a content attribute', function () {
+      document.head.innerHTML += '<meta charset="utf-8"><meta name="aaa"><meta content="bbb content">';
+      var metas = getMetas();
+      expect(metas).toEqual({});
     });
   });
 

@@ -43,7 +43,9 @@
           metasObj = {};
 
       metasArray.forEach(function (meta) {
-        metasObj[meta.name] = meta.content;
+        if (meta.name && meta.content) {
+          metasObj[meta.name] = meta.content;
+        }
       });
 
       return metasObj;
