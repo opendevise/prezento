@@ -9,8 +9,8 @@ This project is still in progress, here's the roadmap and current status :
 1. ✔ **Write protocol draft**
 1. ✔ **Implement POC on various HTML5 slide deck frameworks**
 1. ✔ **Implement POC shell demo**
-1. *(WIP) Write JavaScript helper library*
-1. Request for comments and feedback from slide deck vendors and sharing websites
+1. ✔ **Write JavaScript helper library**
+1. *(WIP) Request for comments and feedback from slide deck vendors and sharing websites*
 1. Improve protocol and library
 1. Freeze 1.0 version
 1. Call for first implementations (slide deck frameworks and shells)
