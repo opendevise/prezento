@@ -107,11 +107,17 @@ table tr:nth-child(odd) td {
 }
 
 .full iframe {
-  height: 85%;
+  height: 100%;
   max-width: 100%;
 }
 
-.full .controls {
-  height: 10%;
-  width: 100%;
+.full .actions {
+  background: #FFF;
+  border-radius: 3px;
+  bottom: 5%;
+  box-shadow: 0 0 10px #AAA;
+  left: 20%;
+  padding: 10px 15px;
+  position: absolute;
+  width: 60%;
 }
