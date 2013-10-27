@@ -48,6 +48,7 @@
 
         ready: function (slideDeckInfos) {
 
+          $('.vendor').innerHTML = slideDeckInfos.metas['prezento-vendor'] || '';
           $('.title').innerHTML = slideDeckInfos.title;
           $('.author').innerHTML = slideDeckInfos.metas.author || '';
           $('.description').innerHTML = slideDeckInfos.metas.description || '';
