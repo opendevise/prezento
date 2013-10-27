@@ -1,7 +1,7 @@
 # Prezento Documentation
 
 1. [The protocol](#the-protocol)
-  * [Metas](#metas)
+  * [Non protocol requirements](#non-protocol-requirements)
   * [Data format](#data-format)
   * [Core and features](#core-and-features)
   * [Initialization](#initialization)
@@ -23,7 +23,9 @@ The interactions between both pages are handled by `postMessage`. Messages are e
 
 ![prezento protocol schema](https://docs.google.com/drawings/d/16h20r1EWOjjxUgRlFYTXXQsIwcZKM9orKqEsCEcqIDc/pub?w=858)
 
-### 1.1 Metas
+### 1.1 Non protocol requirements
+
+### 1.1.1 Metas
 
 HTML5 slide deck documents must contain some prezento specific metas. It will be really important for search engines and sharing websites. Just add these two meta tag in the `<head>` :
 
@@ -33,6 +35,10 @@ HTML5 slide deck documents must contain some prezento specific metas. It will be
 ```
 
 Replace vendor with the HTML5 slide deck name. It should never change!
+
+### 1.1.2 Zooming
+
+Because a prezento enabled slide deck is expected to be embed in various sizes the contents must expand automatically to the window size. Some frameworks choose to apply a CSS scale transformation other ones go responsive.
 
 ### 1.2 Data format
 
