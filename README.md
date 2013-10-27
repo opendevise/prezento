@@ -22,20 +22,20 @@ This project is still in progress, here's the roadmap and current status :
 
 A lot of websites like [Speacker Deck](https://speakerdeck.com/), [Slideshare](http://www.slideshare.net) or [Parleys](http://parleys.com) allow people to upload and share slide decks. Because a large majority of people use famous desktop softwares for their slide decks, the common and often only accepted upload format on these websites is PDF.
 
-We see more and more slide decks built with Web technologies, especially in tech conferences. They can have really advanced features like interactive demos, animations, multimedia... Depending on the framework, converting a slide deck to a PDF version can be very difficult. Even with a printable an decent PDF document, the result lacks all the cool interactive stuffs.
+We see more and more slide decks built with Web technologies, especially in tech conferences. They can have really advanced features like interactive demos, animations, multimedia... Depending on the framework, converting a slide deck to a PDF version can be very difficult. Even with a printable and decent PDF document, the result lacks all the cool interactive stuffs.
 
-The sharing experience should not be truncated. Visitors of such websites should enjoy the contents the way they were presented during the event. If we want them to accept HTML5 slide decks uploads, we don't need a unique format, we just need a common language so they can interact with it (get the title, get the current slide, go to slide X...).
+The sharing experience should not be truncated. Visitors of such websites should enjoy the contents the way they were presented during the event. If we want these websites to accept HTML5 slide decks uploads, we don't need a unique format, we just need a common language so they can interact with it (get the title, get the current slide, go to slide X...).
 
 ### Advanced modes
 
-This is not the only issue. Lots of frameworks provide some kind of advanced modes to interact with the slide deck :
+Sharing is not the only issue. Lots of frameworks provide some kind of advanced modes to interact with the slide deck :
 
 * The presenter mode : A fullscreen display with the current slide, the next one and a clock and/or a stopwatch.
 * The multiplexed or remote control mode : Some server synchronizes different devices (speaker and attendees) with the same slide deck.
 
-There's no compatibility, theses modes only works for a given framework. They should become bleeding edge webapps that can interact with any kind of slide deck framework. If we want theses webapps, we really need a common language to interact with HTML5 slide decks.
+There's no compatibility, theses modes only work for a given framework. They should become bleeding edge webapps that can interact with any kind of slide deck framework. If we want these webapps, we really need a common language to interact with HTML5 slide decks.
 
-Prezento tries to address these issues by proposing a simple protocol (through this documentation) and a JavaScript helper library to ease protocol implementation.
+Prezento tries to address these issues by proposing a simple protocol (specified in the documentation below) and a JavaScript helper library to ease protocol implementation.
 
 ## Specifications & documentation
 
