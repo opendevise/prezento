@@ -14,8 +14,8 @@ module.exports = function (config) {
 
     // list of files / patterns to load in the browser
     files: [
-      '*.js',
-      'tests/*.js'
+      'prezento.js',
+      'tests/spec/*.js'
     ],
 
 
@@ -59,8 +59,12 @@ module.exports = function (config) {
     // - Safari (only Mac)
     // - PhantomJS
     // - IE (only Windows)
-//    browsers: ['Chrome', 'Firefox'],
-    browsers: ['PhantomJS'],
+    browsers: [
+//      'PhantomJS',
+      'Chrome',
+      'Firefox',
+      'Opera',
+    ],
 
 
     // If browser does not capture in given timeout [ms], kill it

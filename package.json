@@ -5,7 +5,8 @@
   "devDependencies": {
     "karma": "~0.10",
     "karma-coverage": "~0.1",
-    "karma-jasmine": "~0.1"
+    "karma-jasmine": "~0.1",
+    "karma-opera-launcher": "~0.1"
   },
   "engines": {
     "node": ">=0.8.0"
