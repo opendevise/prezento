@@ -52,11 +52,11 @@ Since the current project status is very new, current implementations are only d
 
 ### HTML5 slide deck frameworks
 
-* DZSlides (POC for demo shell) - [demo shell example](http://prezento.github.io/prezento/shells/demo/?url=/prezento/slides/dzslides)
-* RevealJS (POC for demo shell) - [demo shell example](http://prezento.github.io/prezento/shells/demo/?url=/prezento/slides/reveal.js)
-* Impress.js (POC for demo shell) - [demo shell example](http://prezento.github.io/prezento/shells/demo/?url=/prezento/slides/impress.js)
+* DZSlides (POC for demo shell) - [demo shell example](http://prezento.github.io/prezento/shells/demo/?url=/prezento/slides/dzslides/)
+* RevealJS (POC for demo shell) - [demo shell example](http://prezento.github.io/prezento/shells/demo/?url=/prezento/slides/reveal.js/)
+* Impress.js (POC for demo shell) - [demo shell example](http://prezento.github.io/prezento/shells/demo/?url=/prezento/slides/impress.js/)
 * Google IO (POC for demo shell, zoom not working) - [demo shell example](http://prezento.github.io/prezento/shells/demo/?url=/prezento/slides/io-2013-slides/template.html)
-* Deck.js (POC for demo shell, zoom not working) - [demo shell example](http://prezento.github.io/prezento/shells/demo/?url=/prezento/slides/deck.js/introduction)
+* Deck.js (POC for demo shell, zoom not working) - [demo shell example](http://prezento.github.io/prezento/shells/demo/?url=/prezento/slides/deck.js/introduction/)
 
 ## Credits
 

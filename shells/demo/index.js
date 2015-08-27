@@ -36,7 +36,7 @@
   };
 
   // Setup the slide deck iframe
-  $('iframe').src = getSearchParams().url;
+  $('iframe').src = location.origin + getSearchParams().url;
 
   // Setup the slide deck proxy
 
